@@ -15,15 +15,39 @@ pygame.init()
 #main window
 screen = pygame.display.set_mode(SCREEN_SIZE, DOUBLEBUF)
 #game surface
-game_bg = screen.subsurface((0, 0, GAME_AREA[0], GAME_AREA[1]))
-game_fg = screen.subsurface((0, 0, GAME_AREA[0], GAME_AREA[1]))
+game_bg = pygame.surface.Surface((GAME_AREA[0], GAME_AREA[1]))
+game_fg = pygame.surface.Surface((GAME_AREA[0], GAME_AREA[1]))
 #menu surface
 menu_bar = screen.subsurface((0, WORLD_SIZE[1]*16, WORLD_SIZE[0]*16, 3*16))
 
 clock = pygame.time.Clock()
 
+#engine objects
+class Imager:
+    def __init__(self):
+        self.images = {}
+
+    def load(self, name, image):
+        if not (image in self.images):
+            self.images[name] = pygame.image.load(image)
+            return self.images[name]
+        else:
+            return self.images[name]
+
+    def use(self, name):
+        if name in self.images:
+            return self.images[name]
+        else:
+            print "image not loaded"
+
+#make an Imager object
+#load tiles and sprites
+loader = Imager()
+loader.load("grass", "grass.png")
+loader.load("dirt", "dirt.png")
+
 #game objects
-class Thing:
+class Creature:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -32,6 +56,12 @@ class Thing:
         self.x += dx
         self.y += dy
 
+class Building:
+    def __init__(self, tilex, tiley, area):
+        self.x = tilex
+        self.y = tiley
+        self.area = area #use a Rect
+
 #game functions
 def render_all():
     global screen
@@ -39,7 +69,7 @@ def render_all():
     global game_fg
     global menu_bar
 
-    screen.fill((0,0,0))
+    screen.blit(game_bg, (0, 0))
     menu_bar.fill((255,255,255))
         
 
@@ -61,6 +91,9 @@ for row in range(WORLD_SIZE[1]):
     for col in range(WORLD_SIZE[0]):
         if worldmap[row][col] > 0:
             worldmap[row][col] = 1
+            game_bg.blit(loader.use("grass"), (col*16, row*16))
+        else:
+            game_bg.blit(loader.use("dirt"), (col*16, row*16))
             
 #main loop
 try:
