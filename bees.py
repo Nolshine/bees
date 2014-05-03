@@ -5,10 +5,11 @@ from pygame.locals import *
 import world
 
 #global parameters
-WORLD_SIZE = (37, 25)
-SCREEN_SIZE = (WORLD_SIZE[0]*16, (WORLD_SIZE[1]+3)*16)
-GAME_AREA = (WORLD_SIZE[0]*16, WORLD_SIZE[1]*16)
-MENU_AREA = (WORLD_SIZE[0]*16, 3*16)
+TILE_SIZE = 32
+WORLD_SIZE = (30, 17)
+SCREEN_SIZE = (WORLD_SIZE[0]*TILE_SIZE, (WORLD_SIZE[1]+2)*TILE_SIZE)
+GAME_AREA = (WORLD_SIZE[0]*TILE_SIZE, WORLD_SIZE[1]*TILE_SIZE)
+MENU_AREA = (WORLD_SIZE[0]*TILE_SIZE, 2*TILE_SIZE)
 
 #initialization
 pygame.init()
@@ -18,7 +19,7 @@ screen = pygame.display.set_mode(SCREEN_SIZE, DOUBLEBUF)
 game_bg = pygame.surface.Surface((GAME_AREA[0], GAME_AREA[1]))
 game_fg = pygame.surface.Surface((GAME_AREA[0], GAME_AREA[1]))
 #menu surface
-menu_bar = screen.subsurface((0, WORLD_SIZE[1]*16, WORLD_SIZE[0]*16, 3*16))
+menu_bar = screen.subsurface((0, WORLD_SIZE[1]*TILE_SIZE, WORLD_SIZE[0]*TILE_SIZE, 2*TILE_SIZE))
 
 clock = pygame.time.Clock()
 
@@ -45,6 +46,7 @@ class Imager:
 loader = Imager()
 loader.load("grass", "grass.png")
 loader.load("dirt", "dirt.png")
+loader.load("hive", "hive.png")
 
 #game objects
 class Creature:
@@ -62,14 +64,27 @@ class Building:
         self.y = tiley
         self.area = area #use a Rect
 
+class Hive(Building):
+    def __init__(self, tilex, tiley):
+        global TILE_SIZE
+        rect = pygame.Rect(tilex*TILE_SIZE, tiley*TILE_SIZE,
+                           2*TILE_SIZE, 2*TILE_SIZE)
+        Building.__init__(self, tilex, tiley, rect)
+        self.sprite = "hive"
+
 #game functions
 def render_all():
     global screen
     global game_bg
     global game_fg
     global menu_bar
+    global members
+    global loader
 
-    screen.blit(game_bg, (0, 0))
+    game_fg.blit(game_bg, (0, 0))
+    for building in members["buildings"]:
+        game_fg.blit(loader.use(building.sprite), building.area)
+    screen.blit(game_fg, (0,0))
     menu_bar.fill((255,255,255))
         
 
@@ -91,10 +106,17 @@ for row in range(WORLD_SIZE[1]):
     for col in range(WORLD_SIZE[0]):
         if worldmap[row][col] > 0:
             worldmap[row][col] = 1
-            game_bg.blit(loader.use("grass"), (col*16, row*16))
+            game_bg.blit(loader.use("grass"), (col*TILE_SIZE, row*TILE_SIZE))
         else:
-            game_bg.blit(loader.use("dirt"), (col*16, row*16))
-            
+            game_bg.blit(loader.use("dirt"), (col*TILE_SIZE, row*TILE_SIZE))
+#get ready to store game units
+members = {"buildings":[],"creatures":[]}
+#hive goes as near the middle as possible
+tilex = round((len(worldmap[row])-1)/2)
+tiley = round((len(worldmap)-1)/2)
+members["buildings"].append(Hive(tilex, tiley))
+#put a couple of flowers down
+
 #main loop
 try:
     while going:

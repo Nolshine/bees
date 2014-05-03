@@ -70,7 +70,6 @@ def generate(height, width):
                 if choice <= item[1]:
                     worldmap[row].append(item[0])
                     break
-
     for i in range(9, 0, -1):
         for row in range(len(worldmap)):
             for col in range(len(worldmap[row])):
