@@ -1,4 +1,6 @@
 #bees
+from random import choice
+
 import pygame
 from pygame.locals import *
 
@@ -47,6 +49,7 @@ loader = Imager()
 loader.load("grass", "grass.png")
 loader.load("dirt", "dirt.png")
 loader.load("hive", "hive.png")
+loader.load("flower", "flower.png")
 
 #game objects
 class Creature:
@@ -71,6 +74,14 @@ class Hive(Building):
                            2*TILE_SIZE, 2*TILE_SIZE)
         Building.__init__(self, tilex, tiley, rect)
         self.sprite = "hive"
+
+class Flower(Building):
+    def __init__(self, tilex, tiley):
+        global TILE_SIZE
+        rect = pygame.Rect(tilex*TILE_SIZE, tiley*TILE_SIZE,
+                           TILE_SIZE, TILE_SIZE)
+        Building.__init__(self, tilex, tiley, rect)
+        self.sprite = "flower"
 
 #game functions
 def render_all():
@@ -102,11 +113,14 @@ def render_all():
 going = True
 
 worldmap = world.generate(WORLD_SIZE[1], WORLD_SIZE[0])
+init_flowers = []
+
 for row in range(WORLD_SIZE[1]):
     for col in range(WORLD_SIZE[0]):
         if worldmap[row][col] > 0:
             worldmap[row][col] = 1
             game_bg.blit(loader.use("grass"), (col*TILE_SIZE, row*TILE_SIZE))
+            init_flowers.append((col, row))
         else:
             game_bg.blit(loader.use("dirt"), (col*TILE_SIZE, row*TILE_SIZE))
 #get ready to store game units
@@ -115,6 +129,10 @@ members = {"buildings":[],"creatures":[]}
 tilex = round((len(worldmap[row])-1)/2)
 tiley = round((len(worldmap)-1)/2)
 members["buildings"].append(Hive(tilex, tiley))
+for i in range(10):
+    location = choice(init_flowers)
+    init_flowers.remove(location)
+    members["buildings"].append(Flower(location[0], location[1]))
 #put a couple of flowers down
 
 #main loop
