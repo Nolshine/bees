@@ -59,7 +59,7 @@ def cutoff(world, threshold):
                 world[row][col] = 9
     
 
-def generate(height, width):
+def generate(width, height):
     base = [(0, 0.97), (9, 1)]
     worldmap = []
     for row in range(height):
@@ -97,4 +97,4 @@ if __name__ == "__main__":
         for col in row:
             printrow += tiles[col]
     ##        printrow += str(col)
-        print printrow
+        print(printrow)
